@@ -1,5 +1,5 @@
 # LLLMA
-Local LLM Assistant (LLLMA) is like Copilot but runs offline and can be personalized
+Local LLM Assistant (LLLMA) is like Microsoft Copilot (in 2024) but runs offline and can be personalized to interact with your system
 
 ## Setup
 
