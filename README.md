@@ -3,7 +3,7 @@ Local LLM Assistant (LLLMA) is like Microsoft Copilot (in 2024) but runs offline
 
 ## Important
 - This app has only been tested to work on Windows 11
-- This app is customized for my personal use, feature requests are not guaranteed, feel free to fork the repo
+- This app is customized for my personal use, feature requests are not guaranteed to be supported, feel free to fork the repo
 
 ## Setup
 1. Install [Node.js](https://nodejs.org/)
