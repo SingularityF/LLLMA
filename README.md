@@ -12,4 +12,4 @@ Local LLM Assistant (LLLMA) is like Microsoft Copilot (in 2024) but runs offline
 7. Run `npm i` to install dependencies
 8. Run `docker compose up --detach faster-whisper-server-cpu` to install speech recognition server. Make sure Docker Desktop with the container is running in your system tray
 9. Run `npm start` to launch the UI
-10. Press and hold the mic button to speak with the assitant
+10. Press and hold the mic button to speak with the assistant
