@@ -1,0 +1,40 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Local LLM Assistant</title>
+  <style>
+    #mic-button {
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+      background-color: red;
+      color: white;
+      font-size: 100px;
+      text-align: center;
+      line-height: 200px;
+      margin: 50px auto;
+      user-select: none;
+      cursor: pointer;
+    }
+  </style>
+  <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css">
+
+</head>
+
+<body>
+  <div id="mic-button">🎤</div>
+  <div class="row">
+    <div class="col-2 text-end">In: </div>
+    <div class="col-10 pe-3" id="recognized-text"></div>
+  </div>
+  <div class="row">
+    <div class="col-2 text-end">Out: </div>
+    <div class="col-10 pe-3" id="generated-text"></div>
+  </div>
+  <script src="recorder.js"></script> <!-- Include Recorder.js -->
+  <script src="renderer.js"></script>
+</body>
+
+</html>
