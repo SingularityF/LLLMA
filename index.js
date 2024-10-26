@@ -196,7 +196,8 @@ function createWindow() {
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,
-    }
+    },
+    autoHideMenuBar: true
   });
   win.loadFile('index.html');
 }

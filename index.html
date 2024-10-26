@@ -1,4 +1,3 @@
-<!-- index.html -->
 <!DOCTYPE html>
 <html>
 
@@ -14,25 +13,101 @@
       font-size: 100px;
       text-align: center;
       line-height: 200px;
-      margin: 50px auto;
       user-select: none;
       cursor: pointer;
     }
+
+    #edit-button {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background-color: blue;
+      color: white;
+      font-size: 30px;
+      text-align: center;
+      line-height: 60px;
+      margin: 5px auto;
+      user-select: none;
+      cursor: pointer;
+    }
+
+    .input-group {
+      margin-top: 20px;
+    }
+
+    #llm-prompt-input {
+      resize: none;
+      overflow: hidden;
+    }
   </style>
   <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css">
-
 </head>
 
 <body>
-  <div id="mic-button">🎤</div>
-  <div class="row">
-    <div class="col-2 text-end">In: </div>
-    <div class="col-10 pe-3" id="recognized-text"></div>
+
+
+
+  <div class="container">
+
+    <section id="controls-interface">
+      <div class="row m-2">
+        <div class="col-9 d-flex align-items-center justify-content-center">
+          <div class="shadow" id="mic-button">🎤</div>
+        </div>
+        <div class="col-3 d-flex align-items-end justify-content-end">
+          <div class="shadow" id="edit-button">✏️</div>
+        </div>
+      </div>
+    </section>
+
+
+    <section id="audio-input-display">
+      <div class="row">
+        <div class="col-12"><span class="badge rounded-pill text-bg-primary">User Input:</span></div>
+      </div>
+      <div class="row">
+        <div class="col-12 p-3">
+          <div class="card text-bg-light">
+            <div class="card-body">
+              <div>
+                <pre style='white-space: pre-wrap;' class='m-0' id="recognized-text"></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="llm-response-display">
+      <div>
+        <div class="col-12"><span class="badge rounded-pill text-bg-danger">LLM Response:</span></div>
+      </div>
+      <div class="row">
+        <div class="col-12 min-vh-100 p-3">
+          <div class="card text-bg-light">
+            <div class="card-body">
+              <div>
+                <pre style='white-space: pre-wrap;' class='m-0' id="generated-text"></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
   </div>
-  <div class="row">
-    <div class="col-2 text-end">Out: </div>
-    <div class="col-10 pe-3" id="generated-text"></div>
-  </div>
+
+  <section class="d-none sticky-bottom shadow-lg bg-dark" id="text-input-interface">
+    <div class="container h-100 py-2">
+      <div class="d-flex align-items-center justify-content-center h-100">
+        <div class="input-group m-0">
+          <textarea class="form-control" id="llm-prompt-input" rows="1" placeholder="Enter your prompt here..."
+            oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'"></textarea>
+          <button class="btn btn-primary" id="submit-prompt-button">Submit</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <script src="recorder.js"></script> <!-- Include Recorder.js -->
   <script src="renderer.js"></script>
 </body>

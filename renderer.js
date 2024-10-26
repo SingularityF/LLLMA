@@ -1,5 +1,8 @@
 const { ipcRenderer } = require('electron');
 const micButton = document.getElementById('mic-button');
+const editButton = document.getElementById('edit-button');
+const textInputInterface = document.getElementById('text-input-interface');
+const audioInputDisplay = document.getElementById('audio-input-display');
 const promptDisplay = document.getElementById('recognized-text');
 const reponseDisplay = document.getElementById('generated-text');
 
@@ -7,6 +10,40 @@ let recorder;
 let audioContext;
 let gumStream;
 let outputText = "";
+
+document.getElementById('llm-prompt-input').addEventListener('keydown', function (event) {
+  if (event.key === 'Enter' && !event.shiftKey) {
+    event.preventDefault();
+    submitPrompt();
+  }
+});
+
+document.getElementById('submit-prompt-button').addEventListener('click', function () {
+  submitPrompt();
+});
+
+function submitPrompt() {
+  const prompt = document.getElementById('llm-prompt-input').value;
+  if (prompt.trim() !== '') {
+    outputText = ""
+    stopTTSAndClearQueue();
+    updateInputDisplay(prompt);
+  }
+  document.getElementById('llm-prompt-input').value = '';
+}
+
+micButton.addEventListener('mousedown', () => {
+  textInputInterface.classList.add('d-none');
+});
+
+editButton.addEventListener('click', () => {
+  if (textInputInterface.classList.contains('d-none')) {
+    textInputInterface.classList.remove('d-none');
+  } else {
+    textInputInterface.classList.add('d-none');
+  }
+  document.getElementById('llm-prompt-input').focus();
+});
 
 micButton.addEventListener('mousedown', () => {
   navigator.mediaDevices.getUserMedia({ audio: true })
@@ -47,19 +84,20 @@ micButton.addEventListener('mouseup', () => {
   });
 });
 
-
-outputText = "";
-
-ipcRenderer.on('speech-recognition-result', (event, data) => {
-  promptDisplay.innerHTML = "<pre style='white-space: pre-wrap;'>" + data.text + "</pre>";
+function updateInputDisplay(text) {
+  promptDisplay.innerHTML = text;
   outputText = ""
   stopTTSAndClearQueue();
-  ipcRenderer.send('generate-prompt', { prompt: data.text });
+  ipcRenderer.send('generate-prompt', { prompt: text });
+}
+
+ipcRenderer.on('speech-recognition-result', (event, data) => {
+  updateInputDisplay(data.text);
 });
 
 ipcRenderer.on("generate-prompt-token", (event, data) => {
   outputText += data;
-  reponseDisplay.innerHTML = "<pre style='white-space: pre-wrap;'>" + outputText.toString() + "</pre>";
+  reponseDisplay.innerHTML = outputText.toString();
 });
 
 ipcRenderer.on("generate-prompt-sentence", (event, data) => {
@@ -78,39 +116,39 @@ const ttsController = {
   speaking: false,
 
   // Enqueue a sentence for TTS
-  enqueue: function(sentence) {
-      this.queue.push(sentence);
-      if (!this.speaking) {
-          this.next();
-      }
+  enqueue: function (sentence) {
+    this.queue.push(sentence);
+    if (!this.speaking) {
+      this.next();
+    }
   },
 
   // Dequeue and speak the next sentence
-  next: function() {
-      if (this.queue.length > 0) {
-          this.speaking = true;
-          const nextSentence = this.queue.shift();
-          const utterance = new SpeechSynthesisUtterance(nextSentence);
-          const voices = speechSynthesis.getVoices();
-          utterance.voice = voices.find(voice => voice.name.includes("Zira"));
-          utterance.onend = () => {
-              this.speaking = false;
-              this.next();
-          };
-          utterance.onerror = (event) => {
-              console.error('SpeechSynthesisUtterance error:', event.error);
-              this.speaking = false;
-              this.next();
-          };
-          window.speechSynthesis.speak(utterance);
-      }
+  next: function () {
+    if (this.queue.length > 0) {
+      this.speaking = true;
+      const nextSentence = this.queue.shift();
+      const utterance = new SpeechSynthesisUtterance(nextSentence);
+      const voices = speechSynthesis.getVoices();
+      utterance.voice = voices.find(voice => voice.name.includes("Zira"));
+      utterance.onend = () => {
+        this.speaking = false;
+        this.next();
+      };
+      utterance.onerror = (event) => {
+        console.error('SpeechSynthesisUtterance error:', event.error);
+        this.speaking = false;
+        this.next();
+      };
+      window.speechSynthesis.speak(utterance);
+    }
   },
 
   // Stop speech and clear the queue
-  stopAndClear: function() {
-      window.speechSynthesis.cancel(); // This will stop the current speech
-      this.queue = [];
-      this.speaking = false;
+  stopAndClear: function () {
+    window.speechSynthesis.cancel(); // This will stop the current speech
+    this.queue = [];
+    this.speaking = false;
   }
 };
 
