@@ -17,7 +17,7 @@ Local LLM Assistant (Lo-MA) is like Microsoft Copilot (in 2024) but runs offline
 9. Run `npm start` to launch the UI
 10. Press and hold the mic button to speak with the assistant, first time may take some time to download the speech recognition model, subsequent conversations are real-time (on a machine with decent specs)
 
-## Debug
+## Troubleshooting
 - You may not hear the TTS if you don't have the EN-US language pack installed. There will be a dropdown to select the TTS voice for your system, at the moment you can modify this line `utterance.voice = voices.find(voice => voice.name.includes("Zira"));` in the `renderer.js` file
 - Multi-language support will be added for speech recognition, for now you can modify the whisper model used in this line `formData.append('model', 'tiny.en');` in the `index.js` file, refer to [this](https://github.com/openai/whisper?tab=readme-ov-file#available-models-and-languages)
 - If speech recognition is not working well for you, you can use a larger model, refer to [this](https://github.com/openai/whisper?tab=readme-ov-file#available-models-and-languages)
