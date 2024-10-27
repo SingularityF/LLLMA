@@ -1,5 +1,5 @@
-# LLLMA
-Local LLM Assistant (LLLMA) is like Microsoft Copilot (in 2024) but runs offline and can be personalized to interact with your system
+# Lo-MA
+Local LLM Assistant (Lo-MA) is like Microsoft Copilot (in 2024) but runs offline and can be personalized to interact with your system
 
 ## Important
 - This app has only been tested to work on Windows 11
