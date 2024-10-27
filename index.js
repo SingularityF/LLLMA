@@ -6,9 +6,9 @@ const fs = require('fs');
 const moment = require('moment');
 
 
-function addContext(){
+function addContext() {
   datetimeNow = moment().format();
-  context = {role: "system", content: `Context: The current date and time is ${datetimeNow}. An application can be launched with system output [STARTAPP APPNAME], for example [STARTAPP CHROME]. Currently supported apps include CHROME, PHOTOSHOP, LIGHTROOM, BASH, STEAM.` };
+  context = { role: "system", content: `Context: The current date and time is ${datetimeNow}. An application can be launched with system output [STARTAPP APPNAME], for example [STARTAPP CHROME]. Currently supported apps include CHROME, PHOTOSHOP, LIGHTROOM, BASH, STEAM.` };
   return [context];
 }
 
@@ -192,7 +192,7 @@ function enforceHistoryLimit() {
 function createWindow() {
   const win = new BrowserWindow({
     width: 400,
-    height: 600,
+    height: 700,
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,
@@ -200,6 +200,10 @@ function createWindow() {
     autoHideMenuBar: true
   });
   win.loadFile('index.html');
+
+  ipcMain.on('set-always-on-top', (event, isAlwaysOnTop) => {
+    win.setAlwaysOnTop(isAlwaysOnTop);
+  });
 }
 
 app.whenReady().then(createWindow);

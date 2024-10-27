@@ -5,11 +5,16 @@ const textInputInterface = document.getElementById('text-input-interface');
 const audioInputDisplay = document.getElementById('audio-input-display');
 const promptDisplay = document.getElementById('recognized-text');
 const reponseDisplay = document.getElementById('generated-text');
+const alwaysOnTopSwitch = document.getElementById('alwaysOnTopSwitch');
 
 let recorder;
 let audioContext;
 let gumStream;
 let outputText = "";
+
+alwaysOnTopSwitch.addEventListener('change', () => {
+  ipcRenderer.send('set-always-on-top', alwaysOnTopSwitch.checked);
+});
 
 document.getElementById('llm-prompt-input').addEventListener('keydown', function (event) {
   if (event.key === 'Enter' && !event.shiftKey) {
@@ -23,6 +28,7 @@ document.getElementById('submit-prompt-button').addEventListener('click', functi
 });
 
 function submitPrompt() {
+  const inputElement = document.getElementById('llm-prompt-input')
   const prompt = document.getElementById('llm-prompt-input').value;
   if (prompt.trim() !== '') {
     outputText = ""
@@ -30,6 +36,8 @@ function submitPrompt() {
     updateInputDisplay(prompt);
   }
   document.getElementById('llm-prompt-input').value = '';
+  inputElement.style.height = '';
+  inputElement.style.height = inputElement.scrollHeight + 'px'
 }
 
 micButton.addEventListener('mousedown', () => {

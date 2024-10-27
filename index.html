@@ -44,10 +44,31 @@
 </head>
 
 <body>
-
-
+  <div class="container shadow-sm border-bottom">
+    <nav>
+      <ul class="nav nav-underline">
+        <li class="nav-item">
+          <a class="nav-link active" aria-current="page" href="#">🏠Home</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#">🔧Settings</a>
+        </li>
+      </ul>
+    </nav>
+  </div>
 
   <div class="container">
+
+    <section id="always-on-top">
+      <div class="row">
+        <div class="col d-flex justify-content-end">
+          <div class="form-check form-switch m-3">
+            <input class="form-check-input" type="checkbox" id="alwaysOnTopSwitch">
+            <label class="form-check-label" for="alwaysOnTopSwitch">Always on Top</label>
+          </div>
+        </div>
+      </div>
+    </section>
 
     <section id="controls-interface">
       <div class="row m-2">
@@ -70,7 +91,7 @@
           <div class="card text-bg-light">
             <div class="card-body">
               <div>
-                <pre style='white-space: pre-wrap;' class='m-0' id="recognized-text"></pre>
+                <pre style='white-space: pre-wrap;' class='m-0' id="recognized-text">Awaiting user input...</pre>
               </div>
             </div>
           </div>
@@ -87,7 +108,7 @@
           <div class="card text-bg-light">
             <div class="card-body">
               <div>
-                <pre style='white-space: pre-wrap;' class='m-0' id="generated-text"></pre>
+                <pre style='white-space: pre-wrap;' class='m-0' id="generated-text">Awaiting user input...</pre>
               </div>
             </div>
           </div>
