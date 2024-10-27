@@ -22,5 +22,4 @@ Local LLM Assistant (LLLMA) is like Microsoft Copilot (in 2024) but runs offline
 - Multi-language support will be added for speech recognition, for now you can modify the whisper model used in this line `formData.append('model', 'tiny.en');` in the `index.js` file, refer to [this](https://github.com/openai/whisper?tab=readme-ov-file#available-models-and-languages)
 - If speech recognition is not working well for you, you can use a larger model, refer to [this](https://github.com/openai/whisper?tab=readme-ov-file#available-models-and-languages)
 - You will be able to start a new conversation, for now just restart the app to clear conversation memory
-- Text input will be supported
 - It's normal if the code is hard to understand, it's mostly written by AI and I haven't read most of them
