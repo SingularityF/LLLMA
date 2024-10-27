@@ -12,6 +12,69 @@ let audioContext;
 let gumStream;
 let outputText = "";
 
+// Function to populate the select element with audio output devices
+async function populateAudioOutputSelector() {
+  const selectElement = document.getElementById('outputDeviceSelector');
+
+  try {
+      // Get all media devices
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      // Filter out the audio output devices
+      const audioOutputs = devices.filter(device => device.kind === 'audiooutput');
+
+      // Clear existing options
+      selectElement.innerHTML = '';
+
+      // Populate the select element with new options
+      audioOutputs.forEach(device => {
+          const option = document.createElement('option');
+          option.value = device.deviceId;
+          option.text = device.label || `Device ${device.deviceId}`; // Provide a fallback label if none is available
+          selectElement.appendChild(option);
+      });
+
+      // Optionally, handle no available devices
+      if (audioOutputs.length === 0) {
+          selectElement.innerHTML = '<option>No audio output devices found</option>';
+      }
+
+  } catch (error) {
+      console.error('Error accessing media devices.', error);
+      selectElement.innerHTML = '<option>Error accessing devices</option>';
+  }
+}
+
+function populateVoiceList() {
+  const voiceSelect = document.getElementById('ttsVoiceSelector');
+  const voices = window.speechSynthesis.getVoices();
+
+  voiceSelect.innerHTML = '';
+  voices.forEach((voice, index) => {
+    const option = document.createElement('option');
+    option.value = voice.name;
+    option.textContent = `${voice.name}`;
+    voiceSelect.appendChild(option);
+  });
+}
+
+if (typeof window.speechSynthesis !== 'undefined') {
+  window.speechSynthesis.onvoiceschanged = populateVoiceList;
+}
+
+document.getElementById("workspace-link").addEventListener("click", function () {
+  document.getElementById("workspace-tab").classList.remove("d-none");
+  document.getElementById("workspace-link").classList.add("active");
+  document.getElementById("settings-tab").classList.add("d-none");
+  document.getElementById("settings-link").classList.remove("active");
+});
+
+document.getElementById("settings-link").addEventListener("click", function () {
+  document.getElementById("workspace-tab").classList.add("d-none");
+  document.getElementById("workspace-link").classList.remove("active");
+  document.getElementById("settings-tab").classList.remove("d-none");
+  document.getElementById("settings-link").classList.add("active");
+});
+
 alwaysOnTopSwitch.addEventListener('change', () => {
   ipcRenderer.send('set-always-on-top', alwaysOnTopSwitch.checked);
 });
@@ -138,7 +201,7 @@ const ttsController = {
       const nextSentence = this.queue.shift();
       const utterance = new SpeechSynthesisUtterance(nextSentence);
       const voices = speechSynthesis.getVoices();
-      utterance.voice = voices.find(voice => voice.name.includes("Zira"));
+      utterance.voice = voices.find(voice => voice.name == document.getElementById('ttsVoiceSelector').value);
       utterance.onend = () => {
         this.speaking = false;
         this.next();
@@ -169,3 +232,5 @@ function addSentenceToQueue(sentence) {
 function stopTTSAndClearQueue() {
   ttsController.stopAndClear();
 }
+
+populateAudioOutputSelector();

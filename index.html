@@ -2,7 +2,7 @@
 <html>
 
 <head>
-  <title>Local LLM Assistant</title>
+  <title>Lo-MA</title>
   <style>
     #mic-button {
       width: 200px;
@@ -44,86 +44,130 @@
 </head>
 
 <body>
-  <div class="container shadow-sm border-bottom">
-    <nav>
+
+  <nav class="mb-3">
+    <div class="container shadow-sm border-bottom">
       <ul class="nav nav-underline">
         <li class="nav-item">
-          <a class="nav-link active" aria-current="page" href="#">🏠Home</a>
+          <a class="nav-link active" id="workspace-link" href="#">🎚️Workspace</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="#">🔧Settings</a>
+          <a class="nav-link" href="#">🧠Memory</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" id="settings-link" href="#">⚙️Settings</a>
         </li>
       </ul>
-    </nav>
-  </div>
+    </div>
+  </nav>
 
-  <div class="container">
+  <section id="workspace-tab">
+    <div class="container">
 
-    <section id="always-on-top">
-      <div class="row">
-        <div class="col d-flex justify-content-end">
-          <div class="form-check form-switch m-3">
-            <input class="form-check-input" type="checkbox" id="alwaysOnTopSwitch">
-            <label class="form-check-label" for="alwaysOnTopSwitch">Always on Top</label>
+      <section id="always-on-top">
+        <div class="row">
+          <div class="col d-flex justify-content-end">
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" id="alwaysOnTopSwitch">
+              <label class="form-check-label" for="alwaysOnTopSwitch">Always on Top</label>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="controls-interface">
+        <div class="row m-2">
+          <div class="col-9 d-flex align-items-center justify-content-center">
+            <div class="shadow" id="mic-button">🎤</div>
+          </div>
+          <div class="col-3 d-flex align-items-end justify-content-end">
+            <div class="shadow" id="edit-button">✏️</div>
+          </div>
+        </div>
+      </section>
+
+
+      <section id="audio-input-display">
+        <div class="row">
+          <div class="col-12"><span class="badge rounded-pill text-bg-warning">User Input:</span></div>
+        </div>
+        <div class="row">
+          <div class="col-12 p-3">
+            <div class="card text-bg-light">
+              <div class="card-body">
+                <div>
+                  <pre style='white-space: pre-wrap;' class='m-0' id="recognized-text">Awaiting user input...</pre>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="llm-response-display">
+        <div>
+          <div class="col-12"><span class="badge rounded-pill text-bg-warning">LLM Response:</span></div>
+        </div>
+        <div class="row">
+          <div class="col-12 p-3 mb-5">
+            <div class="card text-bg-light">
+              <div class="card-body">
+                <div>
+                  <pre style='white-space: pre-wrap;' class='m-0' id="generated-text">Awaiting user input...</pre>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <section class="d-none fixed-bottom shadow-lg bg-dark" id="text-input-interface">
+      <div class="container h-100 py-2">
+        <div class="d-flex align-items-center justify-content-center h-100">
+          <div class="input-group m-0">
+            <textarea class="form-control" id="llm-prompt-input" rows="1" placeholder="Enter your prompt here..."
+              oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'"></textarea>
+            <button class="btn btn-primary" id="submit-prompt-button">Submit</button>
           </div>
         </div>
       </div>
     </section>
+  </section>
 
-    <section id="controls-interface">
-      <div class="row m-2">
-        <div class="col-9 d-flex align-items-center justify-content-center">
-          <div class="shadow" id="mic-button">🎤</div>
-        </div>
-        <div class="col-3 d-flex align-items-end justify-content-end">
-          <div class="shadow" id="edit-button">✏️</div>
-        </div>
-      </div>
-    </section>
-
-
-    <section id="audio-input-display">
-      <div class="row">
-        <div class="col-12"><span class="badge rounded-pill text-bg-primary">User Input:</span></div>
-      </div>
-      <div class="row">
-        <div class="col-12 p-3">
-          <div class="card text-bg-light">
+  <section id="settings-tab" class="d-none">
+    <div class="container">
+      <div class="row mb-3">
+        <div class="col">
+          <div class="card">
+            <div class="card-header">
+              Text-to-Speech
+            </div>
             <div class="card-body">
-              <div>
-                <pre style='white-space: pre-wrap;' class='m-0' id="recognized-text">Awaiting user input...</pre>
+              <div class="form-floating">
+                <select class="form-select" id="ttsVoiceSelector">
+                </select>
+                <label for="ttsVoiceSelector">TTS Voice</label>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </section>
 
-    <section id="llm-response-display">
-      <div>
-        <div class="col-12"><span class="badge rounded-pill text-bg-danger">LLM Response:</span></div>
-      </div>
       <div class="row">
-        <div class="col-12 p-3 mb-5">
-          <div class="card text-bg-light">
+        <div class="col">
+          <div class="card">
+            <div class="card-header">
+              Audio Settings
+            </div>
             <div class="card-body">
-              <div>
-                <pre style='white-space: pre-wrap;' class='m-0' id="generated-text">Awaiting user input...</pre>
+              <div class="form-floating">
+                <select class="form-select" id="outputDeviceSelector">
+                </select>
+                <label for="outputDeviceSelector">Audio Output Device</label>
               </div>
             </div>
           </div>
-        </div>
-      </div>
-    </section>
-  </div>
-
-  <section class="d-none fixed-bottom shadow-lg bg-dark" id="text-input-interface">
-    <div class="container h-100 py-2">
-      <div class="d-flex align-items-center justify-content-center h-100">
-        <div class="input-group m-0">
-          <textarea class="form-control" id="llm-prompt-input" rows="1" placeholder="Enter your prompt here..."
-            oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'"></textarea>
-          <button class="btn btn-primary" id="submit-prompt-button">Submit</button>
         </div>
       </div>
     </div>
