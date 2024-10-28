@@ -137,11 +137,12 @@
 
   <section id="settings-tab" class="d-none">
     <div class="container">
+
       <div class="row mb-3">
         <div class="col">
           <div class="card">
             <div class="card-header">
-              Text-to-Speech
+              💬Text-to-Speech
             </div>
             <div class="card-body">
               <div class="form-floating">
@@ -154,11 +155,11 @@
         </div>
       </div>
 
-      <div class="row">
+      <div class="row mb-3">
         <div class="col">
           <div class="card">
             <div class="card-header">
-              Audio Settings
+              🔉Audio Settings
             </div>
             <div class="card-body">
               <div class="form-floating">
@@ -170,6 +171,47 @@
           </div>
         </div>
       </div>
+
+      <div class="row mb-3">
+        <div class="col">
+          <div class="card">
+            <div class="card-header">
+              💻Register Apps
+            </div>
+            <div class="card-body">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th></th>
+                    <th>App Name</th>
+                    <th>Command</th>
+                  </tr>
+                </thead>
+                <tbody id="registeredAppsDisplay">
+                  <tr>
+                    <td><input type="checkbox" class="form-check-input row-checkbox"></td>
+                    <td><input type="text" class="form-control form-control-sm" value="Calculator"></td>
+                    <td><input type="text" class="form-control form-control-sm" value="calc"></td>
+                  </tr>
+                  <tr>
+                    <td><input type="checkbox" class="form-check-input row-checkbox"></td>
+                    <td><input type="text" class="form-control form-control-sm" value="Notepad"></td>
+                    <td><input type="text" class="form-control form-control-sm" value="notepad"></td>
+                  </tr>
+                </tbody>
+              </table>
+              <div class="text-end">
+                <div class="btn-group" role="group">
+                  <button class="btn btn-outline-secondary" onclick="registerNewApp()">➕New</button>
+                  <button class="btn btn-outline-secondary" onclick="saveRegisteredApps()">💾Save</button>
+                  <button class="btn btn-outline-secondary" onclick="deleteRegisteredApps()">🗑️Delete</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
   </section>
 

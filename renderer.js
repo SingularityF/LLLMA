@@ -12,35 +12,79 @@ let audioContext;
 let gumStream;
 let outputText = "";
 
+function getRegisteredAppsData() {
+  const data = [];
+  const rows = document.querySelectorAll("#registeredAppsDisplay tr");
+  rows.forEach(row => {
+      const appName = row.cells[1].querySelector("input").value;
+      const command = row.cells[2].querySelector("input").value;
+      data.push({ appName, command });
+  });
+  return data;
+}
+
+// Function to add a new row
+function registerNewApp() {
+  const table = document.getElementById("registeredAppsDisplay");
+  const newRow = document.createElement("tr");
+  newRow.innerHTML = `
+      <td><input type="checkbox" class="form-check-input row-checkbox"></td>
+      <td><input type="text" class="form-control form-control-sm" placeholder="app..."></td>
+      <td><input type="text" class="form-control form-control-sm" placeholder="command..."></td>
+      `;
+  table.appendChild(newRow);
+}
+
+// Function to delete selected rows
+function deleteRegisteredApps() {
+  const table = document.getElementById("registeredAppsDisplay");
+  const checkboxes = document.querySelectorAll(".row-checkbox");
+  checkboxes.forEach((checkbox) => {
+    if (checkbox.checked) {
+      const row = checkbox.closest("tr");
+      table.removeChild(row);
+    }
+  });
+}
+
+async function launchApplication(command) {
+  try {
+    const output = await ipcRenderer.invoke('launch-app', command);
+    console.log('Application launched successfully:', output);
+  } catch (error) {
+    console.error('Failed to launch application:', error);
+  }
+}
+
 // Function to populate the select element with audio output devices
 async function populateAudioOutputSelector() {
   const selectElement = document.getElementById('outputDeviceSelector');
 
   try {
-      // Get all media devices
-      const devices = await navigator.mediaDevices.enumerateDevices();
-      // Filter out the audio output devices
-      const audioOutputs = devices.filter(device => device.kind === 'audiooutput');
+    // Get all media devices
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    // Filter out the audio output devices
+    const audioOutputs = devices.filter(device => device.kind === 'audiooutput');
 
-      // Clear existing options
-      selectElement.innerHTML = '';
+    // Clear existing options
+    selectElement.innerHTML = '';
 
-      // Populate the select element with new options
-      audioOutputs.forEach(device => {
-          const option = document.createElement('option');
-          option.value = device.deviceId;
-          option.text = device.label || `Device ${device.deviceId}`; // Provide a fallback label if none is available
-          selectElement.appendChild(option);
-      });
+    // Populate the select element with new options
+    audioOutputs.forEach(device => {
+      const option = document.createElement('option');
+      option.value = device.deviceId;
+      option.text = device.label || `Device ${device.deviceId}`; // Provide a fallback label if none is available
+      selectElement.appendChild(option);
+    });
 
-      // Optionally, handle no available devices
-      if (audioOutputs.length === 0) {
-          selectElement.innerHTML = '<option>No audio output devices found</option>';
-      }
+    // Optionally, handle no available devices
+    if (audioOutputs.length === 0) {
+      selectElement.innerHTML = '<option>No audio output devices found</option>';
+    }
 
   } catch (error) {
-      console.error('Error accessing media devices.', error);
-      selectElement.innerHTML = '<option>Error accessing devices</option>';
+    console.error('Error accessing media devices.', error);
+    selectElement.innerHTML = '<option>Error accessing devices</option>';
   }
 }
 
@@ -159,7 +203,7 @@ function updateInputDisplay(text) {
   promptDisplay.innerHTML = text;
   outputText = ""
   stopTTSAndClearQueue();
-  ipcRenderer.send('generate-prompt', { prompt: text });
+  ipcRenderer.send('generate-prompt', { prompt: text, registeredApps: getRegisteredAppsData() });
 }
 
 ipcRenderer.on('speech-recognition-result', (event, data) => {

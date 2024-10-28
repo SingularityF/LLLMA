@@ -4,14 +4,32 @@ const axios = require('axios');
 const FormData = require('form-data');
 const fs = require('fs');
 const moment = require('moment');
+const { exec } = require('child_process');
 
 
-function addContext() {
+function addContext(registeredApps) {
+  appsArray = registeredApps.map((x)=> x.appName);
   datetimeNow = moment().format();
-  context = { role: "system", content: `Context: The current date and time is ${datetimeNow}. An application can be launched with system output [STARTAPP APPNAME], for example [STARTAPP CHROME]. Currently supported apps include CHROME, PHOTOSHOP, LIGHTROOM, BASH, STEAM.` };
+  context = { role: "system", content: `Context: The current date and time is ${datetimeNow}. An application can be launched with system output [STARTAPP APPNAME], for example [STARTAPP Calculator]. Currently supported apps include ${appsArray.join(", ")}.` };
   return [context];
 }
 
+// Function to execute commands like WIN+R
+ipcMain.handle('launch-app', async (event, command) => {
+  return new Promise((resolve, reject) => {
+    exec(command, (error, stdout, stderr) => {
+      if (error) {
+        reject(`Error: ${error.message}`);
+        return;
+      }
+      if (stderr) {
+        reject(`Stderr: ${stderr}`);
+        return;
+      }
+      resolve(stdout);
+    });
+  });
+});
 
 ipcMain.on('perform-speech-recognition', (event, audioFilePath) => {
   const formData = new FormData();
@@ -54,7 +72,7 @@ ipcMain.on('generate-prompt', (event, args) => {
     url: 'http://localhost:11434/api/chat',
     data: {
       model: 'llama3.2',
-      messages: addContext().concat(messageHistory),
+      messages: addContext(args.registeredApps).concat(messageHistory),
     },
     responseType: 'stream', // Important for handling streaming responses
   })
