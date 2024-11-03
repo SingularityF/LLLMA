@@ -1,4 +1,4 @@
-const { ipcRenderer, session } = require('electron');
+const { ipcRenderer } = require('electron');
 const he = require('he');
 const marked = require('marked');
 let windowSessionId;
