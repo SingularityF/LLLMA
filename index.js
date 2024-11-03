@@ -56,7 +56,9 @@ ipcMain.on('perform-speech-recognition', (event, sessionId, audioFilePath) => {
 
   axios.post('http://localhost:51482/v1/audio/transcriptions', formData, config)
     .then(response => {
-      event.sender.send('speech-recognition-result', sessionId, response.data);
+      if (!event.sender.isDestroyed()) {
+        event.sender.send('speech-recognition-result', sessionId, response.data);
+      }
     })
     .catch(error => {
       console.error('Error:', error);
@@ -98,7 +100,9 @@ ipcMain.on('generate-prompt', (event, args) => {
       let llmResponseContent = ''; // To accumulate the LLM's response for history
 
       stream.on('data', (chunk) => {
-        event.sender.send('generate-prompt-token', args.sessionId, JSON.parse(chunk).message.content);
+        if (!event.sender.isDestroyed()) {
+          event.sender.send('generate-prompt-token', args.sessionId, JSON.parse(chunk).message.content);
+        }
         const chunkStr = chunk.toString();
         //console.log('Received chunk:', chunkStr);
 
@@ -145,7 +149,9 @@ ipcMain.on('generate-prompt', (event, args) => {
                 // Skip sentences that are only punctuation
                 if (trimmedSentence && !/^[.?!]+$/.test(trimmedSentence)) {
                   console.log('Sending sentence to renderer:', trimmedSentence);
-                  currentSessionWindow.send('generate-prompt-sentence', args.sessionId, trimmedSentence);
+                  if (!currentSessionWindow.isDestroyed()) {
+                    currentSessionWindow.send('generate-prompt-sentence', args.sessionId, trimmedSentence);
+                  }
                 }
               }
             }
@@ -156,7 +162,9 @@ ipcMain.on('generate-prompt', (event, args) => {
               let finalSentence = sentenceBuffer.trim();
               if (finalSentence && !/^[.?!]+$/.test(finalSentence)) {
                 console.log('Sending last sentence to renderer:', finalSentence);
-                currentSessionWindow.send('generate-prompt-sentence', args.sessionId, finalSentence);
+                if (!currentSessionWindow.isDestroyed()) {
+                  currentSessionWindow.send('generate-prompt-sentence', args.sessionId, finalSentence);
+                }
                 sentenceBuffer = '';
               }
               // Add the LLM's response to the history
@@ -165,7 +173,9 @@ ipcMain.on('generate-prompt', (event, args) => {
               //console.log('Updated message history:', messageHistory);
               // Notify renderer process that generation is done
               console.log('Generation done, notifying renderer.');
-              event.sender.send('generate-prompt-done');
+              if (!event.sender.isDestroyed()) {
+                event.sender.send('generate-prompt-done');
+              }
             }
           } catch (err) {
             console.error('Error parsing JSON line:', err.message);
@@ -180,7 +190,9 @@ ipcMain.on('generate-prompt', (event, args) => {
         let finalSentence = sentenceBuffer.trim();
         if (finalSentence && !/^[.?!]+$/.test(finalSentence)) {
           console.log('Sending remaining sentence to renderer:', finalSentence);
-          currentSessionWindow.send('generate-prompt-sentence', args.sessionId, finalSentence);
+          if (!currentSessionWindow.isDestroyed()) {
+            currentSessionWindow.send('generate-prompt-sentence', args.sessionId, finalSentence);
+          }
         }
         // Ensure 'generate-prompt-done' is sent
         if (!isDone) {
@@ -191,18 +203,24 @@ ipcMain.on('generate-prompt', (event, args) => {
           // Log the updated message history
           console.log('Updated message history:', messageHistory);
           console.log('Generation done (stream end), notifying renderer.');
-          event.sender.send('generate-prompt-done');
+          if (!event.sender.isDestroyed()) {
+            event.sender.send('generate-prompt-done');
+          }
         }
       });
 
       stream.on('error', (err) => {
         console.error('Error in stream:', err.message);
-        event.sender.send('generate-prompt-error', err.message);
+        if (!event.sender.isDestroyed()) {
+          event.sender.send('generate-prompt-error', err.message);
+        }
       });
     })
     .catch((error) => {
       console.error('Error in request:', error.message);
-      event.sender.send('generate-prompt-error', error.message);
+      if (!event.sender.isDestroyed()) {
+        event.sender.send('generate-prompt-error', error.message);
+      }
     });
 });
 
@@ -251,9 +269,10 @@ function createStreamSession(sessionId, voiceName) {
     show: false  // Makes the window invisible
   });
   win.sessionId = sessionId;
-  win.loadFile(`session.html`);
-  win.send("set-session-id", sessionId);
-  win.send("set-voice-name", voiceName);
+  win.loadFile(`session.html`).then(() => {
+    win.send("set-session-id", sessionId);
+    win.send("set-voice-name", voiceName);
+  });
   return win;
 }
 

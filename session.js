@@ -6,7 +6,9 @@ let windowVoiceName;
 
 ipcRenderer.on("generate-prompt-sentence", (event, sessionId, data) => {
     if (windowSessionId == sessionId) {
+        // Convert markdown to HTML tags, then remove HTML tags
         const plainText = marked.parse(data).replace(/<[^>]+>/g, '');
+        // Unescape HTML like &amp;
         addToTTSQueue(he.decode(plainText));
     }
 });
@@ -29,3 +31,6 @@ function addToTTSQueue(sentence) {
     console.log("Reading: " + sentence);
     window.speechSynthesis.speak(utterance);
 }
+
+// speechSynthesis only seems to load voices after being called once, otherwise voice is null
+addToTTSQueue("");
