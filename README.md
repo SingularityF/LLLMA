@@ -1,7 +1,7 @@
 # Lo-MA
 Local LLM Assistant (Lo-MA) is like Microsoft Copilot (in 2024) but runs offline and can be personalized to interact with your system
 
-## Important
+## ⚠️Important
 - This app has only been tested to work on Windows 11
 - This app is customized for my personal use, feature requests are not guaranteed to be supported, feel free to fork the repo
 
@@ -11,7 +11,7 @@ Local LLM Assistant (Lo-MA) is like Microsoft Copilot (in 2024) but runs offline
 3. Install [Docker Desktop](https://www.docker.com/)
 4. In `cmd`, run `ollama run llama3.2` to download the Llama 3.2 3B model. Make sure ollama is running in your system tray
 5. Download Git repository
-6. In a shell of your choice, make sure `LLLMA` folder is the working directory
+6. In a shell of your choice, make sure `Lo-MA` folder is the working directory
 7. Run `npm i` to install dependencies
 8. Run `docker compose up --detach faster-whisper-server-cpu` to install [speech recognition server](https://github.com/fedirz/faster-whisper-server). Make sure Docker Desktop with the container is running in your system tray
 9. Run `npm start` to launch the UI
