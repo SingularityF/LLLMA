@@ -128,11 +128,15 @@ async function populateAudioOutputSelector() {
 function populateVoiceList() {
   const voiceSelect = document.getElementById('ttsVoiceSelector');
   const voices = window.speechSynthesis.getVoices();
+  const ttsSelection = localStorage.getItem("ttsSelection");
 
   voiceSelect.innerHTML = '';
   voices.forEach((voice, index) => {
     const option = document.createElement('option');
     option.value = voice.name;
+    if(voice.name == ttsSelection){
+      option.selected = true;
+    }
     option.textContent = `${voice.name}`;
     voiceSelect.appendChild(option);
   });
@@ -141,6 +145,11 @@ function populateVoiceList() {
 if (typeof window.speechSynthesis !== 'undefined') {
   window.speechSynthesis.onvoiceschanged = populateVoiceList;
 }
+
+document.getElementById("ttsVoiceSelector").addEventListener('change', function() {
+  const ttsSelection = this.value;
+  localStorage.setItem('ttsSelection', ttsSelection);
+});
 
 document.getElementById("workspace-link").addEventListener("click", function () {
   document.getElementById("workspace-tab").classList.remove("d-none");

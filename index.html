@@ -52,7 +52,7 @@
           <a class="nav-link active" id="workspace-link" href="#">🎚️Workspace</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="#">🧠Memory</a>
+          <a class="nav-link" href="#">📜History</a>
         </li>
         <li class="nav-item">
           <a class="nav-link" id="settings-link" href="#">⚙️Settings</a>
@@ -171,6 +171,13 @@
                 <select class="form-select" id="outputDeviceSelector">
                 </select>
                 <label for="outputDeviceSelector">Audio Output Device</label>
+                <div class="text-end">
+                  <div class="btn-group mt-3" role="group">
+                    <button class="btn btn-outline-primary">Refresh</button>
+                    <a class="btn btn-outline-primary" href="ms-settings:apps-volume">🔧Windows
+                      Settings</a>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -181,7 +188,7 @@
         <div class="col">
           <div class="card">
             <div class="card-header">
-              💻Register Apps
+              💻Registered Apps
             </div>
             <div class="card-body">
               <table class="table">
@@ -207,10 +214,25 @@
               </table>
               <div class="text-end">
                 <div class="btn-group" role="group">
-                  <button class="btn btn-outline-secondary" onclick="registerNewApp()">➕New</button>
-                  <button class="btn btn-outline-secondary" onclick="saveRegisteredApps()">💾Save</button>
-                  <button class="btn btn-outline-secondary" onclick="deleteRegisteredApps()">🗑️Delete</button>
+                  <button class="btn btn-outline-primary" onclick="registerNewApp()">➕New</button>
+                  <button class="btn btn-outline-primary" onclick="saveRegisteredApps()">💾Save</button>
+                  <button class="btn btn-outline-primary" onclick="deleteRegisteredApps()">🗑️Delete</button>
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row mb-3">
+        <div class="col">
+          <div class="card">
+            <div class="card-header">
+              🏭Factory Reset
+            </div>
+            <div class="card-body">
+              <div class="text-end">
+                <button type="button" class="btn btn-outline-danger" onclick="if(confirm('Confirm you want to reset all settings'))localStorage.clear()">❌Remove All Settings</button>
               </div>
             </div>
           </div>
