@@ -93,38 +93,6 @@ async function launchApplication(command) {
   }
 }
 
-// Function to populate the select element with audio output devices
-async function populateAudioOutputSelector() {
-  const selectElement = document.getElementById('outputDeviceSelector');
-
-  try {
-    // Get all media devices
-    const devices = await navigator.mediaDevices.enumerateDevices();
-    // Filter out the audio output devices
-    const audioOutputs = devices.filter(device => device.kind === 'audiooutput');
-
-    // Clear existing options
-    selectElement.innerHTML = '';
-
-    // Populate the select element with new options
-    audioOutputs.forEach(device => {
-      const option = document.createElement('option');
-      option.value = device.deviceId;
-      option.text = device.label || `Device ${device.deviceId}`; // Provide a fallback label if none is available
-      selectElement.appendChild(option);
-    });
-
-    // Optionally, handle no available devices
-    if (audioOutputs.length === 0) {
-      selectElement.innerHTML = '<option>No audio output devices found</option>';
-    }
-
-  } catch (error) {
-    console.error('Error accessing media devices.', error);
-    selectElement.innerHTML = '<option>Error accessing devices</option>';
-  }
-}
-
 function populateVoiceList() {
   const voiceSelect = document.getElementById('ttsVoiceSelector');
   const voices = window.speechSynthesis.getVoices();
@@ -229,7 +197,8 @@ function startRecording() {
       const input = audioContext.createMediaStreamSource(stream);
       recorder = new Recorder(input, { numChannels: 1 });
       recorder.record();
-      micButton.style.backgroundColor = 'green';
+      micButton.classList.add('btn-success');
+      micButton.classList.remove('btn-danger');
     }).catch(err => {
       console.error('Error accessing microphone:', err);
     });
@@ -238,7 +207,8 @@ function startRecording() {
 function endRecording() {
   recorder.stop();
   gumStream.getAudioTracks()[0].stop();
-  micButton.style.backgroundColor = 'red';
+  micButton.classList.remove('btn-success');
+  micButton.classList.add('btn-danger');
 
   recorder.exportWAV(blob => {
     const reader = new FileReader();
@@ -291,4 +261,5 @@ ipcRenderer.on("generate-prompt-error", (event, data) => {
   console.log(data);
 });
 
-populateAudioOutputSelector();
+const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))

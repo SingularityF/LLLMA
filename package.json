@@ -17,6 +17,7 @@
     "@electron/remote": "^2.1.2",
     "axios": "^1.7.7",
     "bootstrap": "^5.3.3",
+    "bootstrap-icons": "^1.11.3",
     "form-data": "^4.0.1",
     "he": "^1.2.0",
     "marked": "^14.1.3",
