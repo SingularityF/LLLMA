@@ -5,12 +5,14 @@ const FormData = require('form-data');
 const fs = require('fs');
 const moment = require('moment');
 const { exec } = require('child_process');
-
+let currentSessionId;
+let currentSessionWindow;
 
 function addContext(registeredApps) {
-  appsArray = registeredApps.map((x)=> x.appName);
-  datetimeNow = moment().format();
-  context = { role: "system", content: `Context: The current date and time is ${datetimeNow}. An application can be launched with system output [STARTAPP APPNAME], for example [STARTAPP Calculator]. Currently supported apps include ${appsArray.join(", ")}.` };
+  appsArray = registeredApps.map((x) => x.appName);
+  dateNow = moment().format('MMMM Do YYYY dddd');
+  timeNow = moment().format('h:mm a');
+  context = { role: "system", content: `An application can be launched with system output [STARTAPP APPNAME], for example [STARTAPP Calculator]. Currently supported apps include ${appsArray.join(", ")}. No information above should be included in the system output unless directly requested by users. The current date is ${dateNow}. The current time is ${timeNow}.` };
   return [context];
 }
 
@@ -31,10 +33,20 @@ ipcMain.handle('launch-app', async (event, command) => {
   });
 });
 
-ipcMain.on('perform-speech-recognition', (event, audioFilePath) => {
+ipcMain.on('start-session', (event, sessionId) => {
+  currentSessionWindow = createStreamSession(sessionId);
+});
+
+ipcMain.on('kill-session', (event, sessionId) => {
+  if (!currentSessionWindow.isDestroyed())
+    currentSessionWindow.close();
+});
+
+ipcMain.on('perform-speech-recognition', (event, sessionId, audioFilePath) => {
   const formData = new FormData();
   formData.append('file', fs.createReadStream(audioFilePath));
-  formData.append('model', 'tiny.en');
+  // formData.append('model', 'tiny.en');
+  formData.append('model', 'Systran/faster-whisper-small.en');
 
   const config = {
     headers: {
@@ -44,7 +56,7 @@ ipcMain.on('perform-speech-recognition', (event, audioFilePath) => {
 
   axios.post('http://localhost:51482/v1/audio/transcriptions', formData, config)
     .then(response => {
-      event.sender.send('speech-recognition-result', response.data);
+      event.sender.send('speech-recognition-result', sessionId, response.data);
     })
     .catch(error => {
       console.error('Error:', error);
@@ -86,7 +98,7 @@ ipcMain.on('generate-prompt', (event, args) => {
       let llmResponseContent = ''; // To accumulate the LLM's response for history
 
       stream.on('data', (chunk) => {
-        event.sender.send('generate-prompt-token', JSON.parse(chunk).message.content);
+        event.sender.send('generate-prompt-token', args.sessionId, JSON.parse(chunk).message.content);
         const chunkStr = chunk.toString();
         //console.log('Received chunk:', chunkStr);
 
@@ -133,7 +145,7 @@ ipcMain.on('generate-prompt', (event, args) => {
                 // Skip sentences that are only punctuation
                 if (trimmedSentence && !/^[.?!]+$/.test(trimmedSentence)) {
                   console.log('Sending sentence to renderer:', trimmedSentence);
-                  event.sender.send('generate-prompt-sentence', trimmedSentence);
+                  currentSessionWindow.send('generate-prompt-sentence', args.sessionId, trimmedSentence);
                 }
               }
             }
@@ -144,7 +156,7 @@ ipcMain.on('generate-prompt', (event, args) => {
               let finalSentence = sentenceBuffer.trim();
               if (finalSentence && !/^[.?!]+$/.test(finalSentence)) {
                 console.log('Sending last sentence to renderer:', finalSentence);
-                event.sender.send('generate-prompt-sentence', finalSentence);
+                currentSessionWindow.send('generate-prompt-sentence', args.sessionId, finalSentence);
                 sentenceBuffer = '';
               }
               // Add the LLM's response to the history
@@ -168,7 +180,7 @@ ipcMain.on('generate-prompt', (event, args) => {
         let finalSentence = sentenceBuffer.trim();
         if (finalSentence && !/^[.?!]+$/.test(finalSentence)) {
           console.log('Sending remaining sentence to renderer:', finalSentence);
-          event.sender.send('generate-prompt-sentence', finalSentence);
+          currentSessionWindow.send('generate-prompt-sentence', args.sessionId, finalSentence);
         }
         // Ensure 'generate-prompt-done' is sent
         if (!isDone) {
@@ -207,7 +219,8 @@ function enforceHistoryLimit() {
   console.log('Updated message history:', messageHistory);
 }
 
-function createWindow() {
+
+function createUIWindow() {
   const win = new BrowserWindow({
     width: 400,
     height: 700,
@@ -218,10 +231,30 @@ function createWindow() {
     autoHideMenuBar: true
   });
   win.loadFile('index.html');
+  win.on('close', () => {
+    app.quit(); // This will quit the app when the window is closed
+  });
 
   ipcMain.on('set-always-on-top', (event, isAlwaysOnTop) => {
     win.setAlwaysOnTop(isAlwaysOnTop);
   });
 }
 
-app.whenReady().then(createWindow);
+function createStreamSession(sessionId) {
+  let win = new BrowserWindow({
+    width: 800,
+    height: 600,
+    webPreferences: {
+      nodeIntegration: true,
+      contextIsolation: false, // adjust depending on security needs
+    },
+    show: false  // Makes the window invisible
+  });
+  win.sessionId = sessionId;
+  win.loadFile(`session.html`);
+  win.send("set-session-id", sessionId);
+  return win;
+}
+
+
+app.whenReady().then(createUIWindow);

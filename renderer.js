@@ -1,24 +1,61 @@
 const { ipcRenderer } = require('electron');
+const marked = require('marked');
+
 const micButton = document.getElementById('mic-button');
 const editButton = document.getElementById('edit-button');
 const textInputInterface = document.getElementById('text-input-interface');
 const audioInputDisplay = document.getElementById('audio-input-display');
 const promptDisplay = document.getElementById('recognized-text');
 const reponseDisplay = document.getElementById('generated-text');
+const openMicSwitch = document.getElementById('openMicSwitch');
 const alwaysOnTopSwitch = document.getElementById('alwaysOnTopSwitch');
 
 let recorder;
 let audioContext;
 let gumStream;
 let outputText = "";
+let openMicFlag = false;
+let currentSessionId;
+
+navigator.mediaDevices.getUserMedia({ audio: true })
+  .then(stream => {
+    const audioContext = new AudioContext();
+    const source = audioContext.createMediaStreamSource(stream);
+    const hpFilter = audioContext.createBiquadFilter();
+    hpFilter.type = 'highpass';
+    hpFilter.frequency.value = 100;  // Cutoff frequency for high-pass filter
+
+    audioContext.audioWorklet.addModule('openmic-processor.js') // Path to your worklet file
+      .then(() => {
+        const noiseProcessor = new AudioWorkletNode(audioContext, 'openmic-processor');
+        source.connect(hpFilter).connect(noiseProcessor).connect(audioContext.destination);
+
+        noiseProcessor.port.onmessage = (event) => {
+          if (event.data == "Noise detected") {
+            if (openMicFlag) {
+              console.log("Unmute event detected");
+              startRecording();
+            }
+          } else if (event.data == "No noise detected") {
+            if (openMicFlag) {
+              console.log("Mute event detected")
+              endRecording();
+            }
+          } else {
+            console.log(event.data); // Log or handle messages from your worklet
+          }
+        };
+      });
+  })
+  .catch(err => console.error('Error accessing media devices.', err));
 
 function getRegisteredAppsData() {
   const data = [];
   const rows = document.querySelectorAll("#registeredAppsDisplay tr");
   rows.forEach(row => {
-      const appName = row.cells[1].querySelector("input").value;
-      const command = row.cells[2].querySelector("input").value;
-      data.push({ appName, command });
+    const appName = row.cells[1].querySelector("input").value;
+    const command = row.cells[2].querySelector("input").value;
+    data.push({ appName, command });
   });
   return data;
 }
@@ -123,6 +160,10 @@ alwaysOnTopSwitch.addEventListener('change', () => {
   ipcRenderer.send('set-always-on-top', alwaysOnTopSwitch.checked);
 });
 
+openMicSwitch.addEventListener('change', () => {
+  openMicFlag = !openMicFlag;
+});
+
 document.getElementById('llm-prompt-input').addEventListener('keydown', function (event) {
   if (event.key === 'Enter' && !event.shiftKey) {
     event.preventDefault();
@@ -134,22 +175,30 @@ document.getElementById('submit-prompt-button').addEventListener('click', functi
   submitPrompt();
 });
 
+function killSession() {
+  if (currentSessionId) {
+    ipcRenderer.send('kill-session', currentSessionId);
+  }
+}
+
+function startSession() {
+  currentSessionId = crypto.randomUUID();
+  ipcRenderer.send('start-session', currentSessionId);
+}
+
 function submitPrompt() {
+  killSession();
+  startSession();
   const inputElement = document.getElementById('llm-prompt-input')
   const prompt = document.getElementById('llm-prompt-input').value;
   if (prompt.trim() !== '') {
     outputText = ""
-    stopTTSAndClearQueue();
-    updateInputDisplay(prompt);
+    updateInputDisplay(currentSessionId, prompt);
   }
   document.getElementById('llm-prompt-input').value = '';
   inputElement.style.height = '';
-  inputElement.style.height = inputElement.scrollHeight + 'px'
+  inputElement.style.height = inputElement.scrollHeight + 'px';
 }
-
-micButton.addEventListener('mousedown', () => {
-  textInputInterface.classList.add('d-none');
-});
 
 editButton.addEventListener('click', () => {
   if (textInputInterface.classList.contains('d-none')) {
@@ -160,7 +209,10 @@ editButton.addEventListener('click', () => {
   document.getElementById('llm-prompt-input').focus();
 });
 
-micButton.addEventListener('mousedown', () => {
+function startRecording() {
+  killSession();
+  startSession();
+  textInputInterface.classList.add('d-none');
   navigator.mediaDevices.getUserMedia({ audio: true })
     .then(stream => {
       audioContext = new AudioContext();
@@ -172,9 +224,9 @@ micButton.addEventListener('mousedown', () => {
     }).catch(err => {
       console.error('Error accessing microphone:', err);
     });
-});
+}
 
-micButton.addEventListener('mouseup', () => {
+function endRecording() {
   recorder.stop();
   gumStream.getAudioTracks()[0].stop();
   micButton.style.backgroundColor = 'red';
@@ -192,89 +244,42 @@ micButton.addEventListener('mouseup', () => {
       // Call the Python application with the audio file path
       //callPythonApp(audioFilePath);
 
-      ipcRenderer.send('perform-speech-recognition', audioFilePath);
+      ipcRenderer.send('perform-speech-recognition', currentSessionId, audioFilePath);
       console.log("Speech Recognition in Process");
 
     };
   });
-});
-
-function updateInputDisplay(text) {
-  promptDisplay.innerHTML = text;
-  outputText = ""
-  stopTTSAndClearQueue();
-  ipcRenderer.send('generate-prompt', { prompt: text, registeredApps: getRegisteredAppsData() });
 }
 
-ipcRenderer.on('speech-recognition-result', (event, data) => {
-  updateInputDisplay(data.text);
+micButton.addEventListener('mousedown', () => {
+  startRecording();
 });
 
-ipcRenderer.on("generate-prompt-token", (event, data) => {
-  outputText += data;
-  reponseDisplay.innerHTML = outputText.toString();
+micButton.addEventListener('mouseup', () => {
+  endRecording();
 });
 
-ipcRenderer.on("generate-prompt-sentence", (event, data) => {
-  addSentenceToQueue(data);
+function updateInputDisplay(sessionId, text) {
+  promptDisplay.innerHTML = text;
+  outputText = ""
+  ipcRenderer.send('generate-prompt', { prompt: text, registeredApps: getRegisteredAppsData(), sessionId: sessionId });
+}
+
+ipcRenderer.on('speech-recognition-result', (event, sessionId, data) => {
+  if (currentSessionId == sessionId) {
+    updateInputDisplay(sessionId, data.text);
+  }
 });
 
+ipcRenderer.on("generate-prompt-token", (event, sessionId, data) => {
+  if (currentSessionId == sessionId) {
+    outputText += data;
+    reponseDisplay.innerHTML = marked.parse(outputText.toString());
+  }
+});
 
 ipcRenderer.on("generate-prompt-error", (event, data) => {
   console.log(data);
 });
-
-
-// Speech synthesis controller object
-const ttsController = {
-  queue: [],
-  speaking: false,
-
-  // Enqueue a sentence for TTS
-  enqueue: function (sentence) {
-    this.queue.push(sentence);
-    if (!this.speaking) {
-      this.next();
-    }
-  },
-
-  // Dequeue and speak the next sentence
-  next: function () {
-    if (this.queue.length > 0) {
-      this.speaking = true;
-      const nextSentence = this.queue.shift();
-      const utterance = new SpeechSynthesisUtterance(nextSentence);
-      const voices = speechSynthesis.getVoices();
-      utterance.voice = voices.find(voice => voice.name == document.getElementById('ttsVoiceSelector').value);
-      utterance.onend = () => {
-        this.speaking = false;
-        this.next();
-      };
-      utterance.onerror = (event) => {
-        console.error('SpeechSynthesisUtterance error:', event.error);
-        this.speaking = false;
-        this.next();
-      };
-      window.speechSynthesis.speak(utterance);
-    }
-  },
-
-  // Stop speech and clear the queue
-  stopAndClear: function () {
-    window.speechSynthesis.cancel(); // This will stop the current speech
-    this.queue = [];
-    this.speaking = false;
-  }
-};
-
-// Interface for adding sentences to the queue
-function addSentenceToQueue(sentence) {
-  ttsController.enqueue(sentence);
-}
-
-// Interface for stopping and clearing the TTS queue
-function stopTTSAndClearQueue() {
-  ttsController.stopAndClear();
-}
 
 populateAudioOutputSelector();
