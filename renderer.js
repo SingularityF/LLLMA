@@ -183,7 +183,7 @@ function killSession() {
 
 function startSession() {
   currentSessionId = crypto.randomUUID();
-  ipcRenderer.send('start-session', currentSessionId);
+  ipcRenderer.send('start-session', currentSessionId, document.getElementById('ttsVoiceSelector').value);
 }
 
 function submitPrompt() {

@@ -33,8 +33,8 @@ ipcMain.handle('launch-app', async (event, command) => {
   });
 });
 
-ipcMain.on('start-session', (event, sessionId) => {
-  currentSessionWindow = createStreamSession(sessionId);
+ipcMain.on('start-session', (event, sessionId, voiceName) => {
+  currentSessionWindow = createStreamSession(sessionId, voiceName);
 });
 
 ipcMain.on('kill-session', (event, sessionId) => {
@@ -240,7 +240,7 @@ function createUIWindow() {
   });
 }
 
-function createStreamSession(sessionId) {
+function createStreamSession(sessionId, voiceName) {
   let win = new BrowserWindow({
     width: 800,
     height: 600,
@@ -253,6 +253,7 @@ function createStreamSession(sessionId) {
   win.sessionId = sessionId;
   win.loadFile(`session.html`);
   win.send("set-session-id", sessionId);
+  win.send("set-voice-name", voiceName);
   return win;
 }
 
