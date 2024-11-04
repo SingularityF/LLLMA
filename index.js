@@ -11,7 +11,7 @@ function addContext(registeredApps) {
   appsArray = registeredApps.map((x) => x.appName);
   dateNow = moment().format('MMMM Do YYYY dddd');
   timeNow = moment().format('h:mm a');
-  context = { role: "system", content: `An application can be launched with system (not user) output, [STARTAPP APPNAME] (with square brackets), for example [STARTAPP Calculator]. Currently supported apps include ${appsArray.join(", ")}. No information above should be included in the system output unless directly requested by users. The current date is ${dateNow}. The current time is ${timeNow}. The conversation is to be kept as concise as possible.` };
+  context = { role: "system", content: `This message is system information, it is neither assistant output nor user input. An application can be launched with assistant (not user) output, [STARTAPP APPNAME] (with square brackets), for example [STARTAPP Calculator]. Currently supported apps include ${appsArray.join(", ")}. No information above should be included in the assistant output unless directly requested by users. The current date is ${dateNow}. The current time is ${timeNow}. The conversation is to be kept as concise as possible.` };
   return [context];
 }
 
@@ -167,7 +167,7 @@ ipcMain.on('generate-prompt', (event, args) => {
                 sentenceBuffer = '';
               }
               // Add the LLM's response to the history
-              messageHistory.push({ role: 'system', content: llmResponseContent.trim() });
+              messageHistory.push({ role: 'assistant', content: llmResponseContent.trim() });
               // Log the updated message history
               //console.log('Updated message history:', messageHistory);
               // Notify renderer process that generation is done
@@ -196,7 +196,7 @@ ipcMain.on('generate-prompt', (event, args) => {
         // Ensure 'generate-prompt-done' is sent
         if (!isDone) {
           // Add the LLM's response to the history
-          messageHistory.push({ role: 'system', content: llmResponseContent.trim() });
+          messageHistory.push({ role: 'assistant', content: llmResponseContent.trim() });
           // Ensure the history doesn't exceed 5 messages
           enforceHistoryLimit();
           // Log the updated message history

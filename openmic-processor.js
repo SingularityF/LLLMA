@@ -2,8 +2,8 @@ class OpenMicProcessor extends AudioWorkletProcessor {
     constructor() {
         super();
         this.isNoiseDetected = false;
-        this.noiseThreshold = 0.001;  // Threshold for detecting noise
-        this.noiseDetectionInterval = 3000; // 1 second (x seconds in milliseconds)
+        this.noiseThreshold = 0.005;  // Threshold for detecting noise
+        this.noiseDetectionInterval = 2000; // 1 second (x seconds in milliseconds)
         this.lastTimeNoiseDetected = 0;
     }
 

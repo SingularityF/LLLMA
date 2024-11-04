@@ -14,13 +14,15 @@
     <div class="container shadow-sm border-bottom">
       <ul class="nav nav-underline">
         <li class="nav-item">
-          <a class="nav-link active d-flex justify-content-center align-items-center fw-bold" id="workspace-link" href="#">🎚️Workspace</a>
+          <a class="nav-link active d-flex justify-content-center align-items-center fw-bold" id="workspace-link"
+            href="#">🎚️Workspace</a>
         </li>
         <li class="nav-item">
           <a class="nav-link d-flex justify-content-center align-items-center fw-bold" href="#">📜History</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link d-flex justify-content-center align-items-center fw-bold" id="settings-link" href="#">⚙️Settings</a>
+          <a class="nav-link d-flex justify-content-center align-items-center fw-bold" id="settings-link"
+            href="#">⚙️Settings</a>
         </li>
       </ul>
     </div>
@@ -48,7 +50,7 @@
         <div class="row m-2">
           <div class="col d-flex align-items-center justify-content-center">
             <button class="user-select-none shadow rounded-circle border-0 btn btn-danger"
-              style="font-size: 6.5rem; width: 200px; height: 200px" id="mic-button" data-bs-toggle="tooltip"
+              style="font-size: 6.5rem; width: 13rem; height: 13rem" id="mic-button" data-bs-toggle="tooltip"
               data-bs-title="Press and hold to talk, release to stop"><i class="bi bi-mic-fill"></i>
             </button>
           </div>
@@ -57,16 +59,14 @@
 
 
       <section id="audio-input-display">
+        <div class="rounded-top bg-primary d-flex justify-content-center align-items-center ms-4"
+          style="width: 3rem; height: 3rem"><i class="bi bi-person-fill text-white" style="font-size: 2rem"></i></div>
         <div class="row">
-          <div class="col-12"><span class="badge rounded-pill text-bg-warning">User Input:</span></div>
-        </div>
-        <div class="row">
-          <div class="col-12 p-3">
-            <div class="card text-bg-light">
+          <div class="col-12 px-3 mb-3">
+            <div class="card text-bg-light shadow-sm">
               <div class="card-body">
                 <div>
-                  <pre style='white-space: pre-wrap;' class='m-0 text-body-secondary'
-                    id="recognized-text">Awaiting user input...</pre>
+                  <p class="m-0" id="recognized-text">Awaiting user input...</p>
                 </div>
               </div>
             </div>
@@ -75,16 +75,15 @@
       </section>
 
       <section id="llm-response-display">
-        <div>
-          <div class="col-12"><span class="badge rounded-pill text-bg-warning">LLM Response:</span></div>
-        </div>
+          <div class="rounded-top bg-warning d-flex justify-content-center align-items-center ms-4"
+            style="width: 3rem; height: 3rem"><i class="bi bi-cpu-fill" style="font-size: 2rem"></i></div>
         <div class="row">
-          <div class="col-12 p-3 mb-5">
-            <div class="card text-bg-light">
+          <div class="col-12 px-3 mb-5">
+            <div class="card text-bg-light shadow-sm">
               <div class="card-body">
                 <div>
                   <div id="generated-text">
-                    <pre style='white-space: pre-wrap;' class='m-0 text-body-secondary'>Awaiting user input...</pre>
+                    <p class="m-0">Awaiting user input...</p>
                   </div>
                 </div>
               </div>
@@ -142,6 +141,12 @@
               🔉Audio Settings
             </div>
             <div class="card-body">
+              <div class="form-floating">
+                <select class="form-select" id="outputDeviceSelector">
+                </select>
+                <label for="outputDeviceSelector">Audio Output Device</label>
+              </div>
+
               <div class="text-end">
                 <div class="btn-group mt-3" role="group">
                   <a class="btn btn-outline-primary" href="ms-settings:apps-volume">🔧Windows

@@ -16,19 +16,47 @@ let gumStream;
 let outputText = "";
 let openMicFlag = false;
 let currentSessionId;
+let se_loading = new Audio('SE/se_loading.mp3');
+se_loading.loop = true;
+se_loading.volume = .15;
+se_loading.preload = 'auto';
+
+navigator.mediaDevices.enumerateDevices()
+  .then(devices => {
+    const audioOutputDevices = devices.filter(device => device.kind === 'audiooutput');
+    const outputDeviceSelector = document.getElementById('outputDeviceSelector');
+    const outputDeviceSelection = localStorage.getItem("outputDeviceSelection");
+
+    if (audioOutputDevices.length > 0) {
+      audioOutputDevices.forEach((device, index) => {
+        if (device.deviceId != "default" && device.deviceId != "communications") {
+          const option = document.createElement('option');
+          option.value = device.deviceId;
+          if (device.deviceId == outputDeviceSelection) {
+            option.selected = true;
+            se_loading.setSinkId(device.deviceId);
+          }
+          option.textContent = `${device.label}`;
+          outputDeviceSelector.appendChild(option);
+        }
+      });
+    } else {
+      console.log('No audio output devices found.');
+    }
+  })
+  .catch(error => {
+    console.error('Error listing audio devices:', error);
+  });
 
 navigator.mediaDevices.getUserMedia({ audio: true })
   .then(stream => {
     const audioContext = new AudioContext();
     const source = audioContext.createMediaStreamSource(stream);
-    const hpFilter = audioContext.createBiquadFilter();
-    hpFilter.type = 'highpass';
-    hpFilter.frequency.value = 100;  // Cutoff frequency for high-pass filter
 
     audioContext.audioWorklet.addModule('openmic-processor.js') // Path to your worklet file
       .then(() => {
         const noiseProcessor = new AudioWorkletNode(audioContext, 'openmic-processor');
-        source.connect(hpFilter).connect(noiseProcessor).connect(audioContext.destination);
+        source.connect(noiseProcessor).connect(audioContext.destination);
 
         noiseProcessor.port.onmessage = (event) => {
           if (event.data == "Noise detected") {
@@ -102,7 +130,7 @@ function populateVoiceList() {
   voices.forEach((voice, index) => {
     const option = document.createElement('option');
     option.value = voice.name;
-    if(voice.name == ttsSelection){
+    if (voice.name == ttsSelection) {
       option.selected = true;
     }
     option.textContent = `${voice.name}`;
@@ -114,9 +142,14 @@ if (typeof window.speechSynthesis !== 'undefined') {
   window.speechSynthesis.onvoiceschanged = populateVoiceList;
 }
 
-document.getElementById("ttsVoiceSelector").addEventListener('change', function() {
+document.getElementById("ttsVoiceSelector").addEventListener('change', function () {
   const ttsSelection = this.value;
   localStorage.setItem('ttsSelection', ttsSelection);
+});
+document.getElementById("outputDeviceSelector").addEventListener('change', function () {
+  const outputDeviceSelection = this.value;
+  localStorage.setItem('outputDeviceSelection', outputDeviceSelection);
+  se_loading.setSinkId(outputDeviceSelection);
 });
 
 document.getElementById("workspace-link").addEventListener("click", function () {
@@ -225,7 +258,8 @@ function endRecording() {
 
       ipcRenderer.send('perform-speech-recognition', currentSessionId, audioFilePath);
       console.log("Speech Recognition in Process");
-
+      se_loading.loop = true;
+      se_loading.play();
     };
   });
 }
@@ -254,6 +288,7 @@ ipcRenderer.on("generate-prompt-token", (event, sessionId, data) => {
   if (currentSessionId == sessionId) {
     outputText += data;
     reponseDisplay.innerHTML = marked.parse(outputText.toString());
+    se_loading.loop = false;
   }
 });
 
