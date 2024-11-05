@@ -1,5 +1,17 @@
 const { ipcRenderer } = require('electron');
 const marked = require('marked');
+const { shell } = require('electron');
+
+document.addEventListener('click', function (event) {
+    if (event.target.tagName === 'A') {
+        const href = event.target.href;
+        // Check if the href starts with HTTP/HTTPS or other custom schemes you want to handle
+        if (href.startsWith('http') || href.startsWith('mailto:') || href.startsWith('tel:')) {
+            event.preventDefault(); // Stop the link from opening internally
+            shell.openExternal(href); // Open the link with the default system handler
+        }
+    }
+});
 
 const micButton = document.getElementById('mic-button');
 const editButton = document.getElementById('edit-button');
@@ -172,6 +184,7 @@ alwaysOnTopSwitch.addEventListener('change', () => {
 
 openMicSwitch.addEventListener('change', () => {
   openMicFlag = !openMicFlag;
+  document.getElementById("controls-interface").classList.toggle("d-none");
 });
 
 document.getElementById('llm-prompt-input').addEventListener('keydown', function (event) {
@@ -260,6 +273,7 @@ function endRecording() {
       console.log("Speech Recognition in Process");
       se_loading.loop = true;
       se_loading.play();
+      document.getElementById("srLoadingIndicator").classList.remove("d-none");
     };
   });
 }
@@ -289,6 +303,7 @@ ipcRenderer.on("generate-prompt-token", (event, sessionId, data) => {
     outputText += data;
     reponseDisplay.innerHTML = marked.parse(outputText.toString());
     se_loading.loop = false;
+    document.getElementById("srLoadingIndicator").classList.add("d-none");
   }
 });
 
