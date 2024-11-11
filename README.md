@@ -1,9 +1,11 @@
 # Lo-MA
-Local LLM Assistant (Lo-MA) is like Microsoft Copilot (in 2024) but runs offline and can be personalized to interact with your system
+Local LLM Assistant (Lo-MA) is like Microsoft Copilot (in 2024) but runs offline and can be personalized to interact with your system.
+
+The best way to interact with the assistant is to have a conversation through voice input. The experience is almost hands-free. It can currently open URLs in your browser and launch applications in your system.
 
 ## ⚠️Important
 - This app has only been tested to work on Windows 11
-- This app is customized for my personal use, feature requests are not guaranteed to be supported, feel free to fork the repo
+- This app is customized for my personal use, feature requests are not guaranteed to be supported, feel free to fork the repo or create a PR
 
 ## Setup
 1. Install [Node.js](https://nodejs.org/)
