@@ -7,11 +7,26 @@ const moment = require('moment');
 const { exec } = require('child_process');
 let currentSessionWindow;
 
+var systemPrompt = (supportedApps, dateNow, timeNow) => `
+This message is system information, it is neither assistant output nor user input.
+
+An application can be launched with assistant (not user) output, [STARTAPP APPNAME] (with square brackets), for example [STARTAPP Calculator].
+Currently supported apps include ${supportedApps}.
+
+An URL can be opened in the default browser with assistant (not user) output, [OPENURL URL] (with square brackets), for example [OPENURL https://youtube.com].
+
+No information above should be included in the assistant output unless directly requested by users.
+
+The current date is ${dateNow}. The current time is ${timeNow}.
+
+The conversation is to be kept as concise as possible.
+`
+
 function addContext(registeredApps) {
-  appsArray = registeredApps.map((x) => x.appName);
-  dateNow = moment().format('MMMM Do YYYY dddd');
-  timeNow = moment().format('h:mm a');
-  context = { role: "system", content: `This message is system information, it is neither assistant output nor user input. An application can be launched with assistant (not user) output, [STARTAPP APPNAME] (with square brackets), for example [STARTAPP Calculator]. Currently supported apps include ${appsArray.join(", ")}. No information above should be included in the assistant output unless directly requested by users. The current date is ${dateNow}. The current time is ${timeNow}. The conversation is to be kept as concise as possible.` };
+  const appsArray = registeredApps.map((x) => x.appName);
+  const dateNow = moment().format('MMMM Do YYYY dddd');
+  const timeNow = moment().format('h:mm a');
+  const context = { role: "system", content: systemPrompt(appsArray.join(", "), dateNow, timeNow) };
   return [context];
 }
 

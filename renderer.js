@@ -2,17 +2,6 @@ const { ipcRenderer } = require('electron');
 const marked = require('marked');
 const { shell } = require('electron');
 
-document.addEventListener('click', function (event) {
-    if (event.target.tagName === 'A') {
-        const href = event.target.href;
-        // Check if the href starts with HTTP/HTTPS or other custom schemes you want to handle
-        if (href.startsWith('http') || href.startsWith('mailto:') || href.startsWith('tel:')) {
-            event.preventDefault(); // Stop the link from opening internally
-            shell.openExternal(href); // Open the link with the default system handler
-        }
-    }
-});
-
 const micButton = document.getElementById('mic-button');
 const editButton = document.getElementById('edit-button');
 const textInputInterface = document.getElementById('text-input-interface');
@@ -28,10 +17,35 @@ let gumStream;
 let outputText = "";
 let openMicFlag = false;
 let currentSessionId;
-let se_loading = new Audio('SE/se_loading.mp3');
-se_loading.loop = true;
-se_loading.volume = .15;
-se_loading.preload = 'auto';
+let seLoading = new Audio('SE/seLoading.mp3');
+let commandBuffer = ""
+seLoading.loop = true;
+seLoading.volume = .15;
+seLoading.preload = 'auto';
+
+function addToCommandBuffer(text) {
+  commandBuffer += text;
+  commandBuffer = commandBuffer.slice(-10000);
+  
+  const regexApp = /\[STARTAPP (.*?)\]/;
+  const regexLink = /\[OPENURL (.*?)\]/;
+  
+  let match = commandBuffer.match(regexApp);
+  if (match) {
+    registeredApps = getRegisteredAppsData();
+    if (registeredApps.map((x) => x.appName).includes(match[1])) {
+      const foundObject = registeredApps.find(x => x.appName == match[1]);
+      launchApplication(foundObject.command);
+      commandBuffer = "";
+    }
+  }
+
+  match = commandBuffer.match(regexLink);
+  if (match) {
+    shell.openExternal(match[1]);
+    commandBuffer = "";
+  }
+}
 
 navigator.mediaDevices.enumerateDevices()
   .then(devices => {
@@ -46,7 +60,7 @@ navigator.mediaDevices.enumerateDevices()
           option.value = device.deviceId;
           if (device.deviceId == outputDeviceSelection) {
             option.selected = true;
-            se_loading.setSinkId(device.deviceId);
+            seLoading.setSinkId(device.deviceId);
           }
           option.textContent = `${device.label}`;
           outputDeviceSelector.appendChild(option);
@@ -88,6 +102,18 @@ navigator.mediaDevices.getUserMedia({ audio: true })
       });
   })
   .catch(err => console.error('Error accessing media devices.', err));
+
+
+document.addEventListener('click', function (event) {
+  if (event.target.tagName === 'A') {
+    const href = event.target.href;
+    // Check if the href starts with HTTP/HTTPS or other custom schemes you want to handle
+    if (href.startsWith('http') || href.startsWith('mailto:') || href.startsWith('tel:')) {
+      event.preventDefault(); // Stop the link from opening internally
+      shell.openExternal(href); // Open the link with the default system handler
+    }
+  }
+});
 
 function getRegisteredAppsData() {
   const data = [];
@@ -161,7 +187,7 @@ document.getElementById("ttsVoiceSelector").addEventListener('change', function 
 document.getElementById("outputDeviceSelector").addEventListener('change', function () {
   const outputDeviceSelection = this.value;
   localStorage.setItem('outputDeviceSelection', outputDeviceSelection);
-  se_loading.setSinkId(outputDeviceSelection);
+  seLoading.setSinkId(outputDeviceSelection);
 });
 
 document.getElementById("workspace-link").addEventListener("click", function () {
@@ -271,8 +297,8 @@ function endRecording() {
 
       ipcRenderer.send('perform-speech-recognition', currentSessionId, audioFilePath);
       console.log("Speech Recognition in Process");
-      se_loading.loop = true;
-      se_loading.play();
+      seLoading.loop = true;
+      seLoading.play();
       document.getElementById("srLoadingIndicator").classList.remove("d-none");
     };
   });
@@ -301,8 +327,9 @@ ipcRenderer.on('speech-recognition-result', (event, sessionId, data) => {
 ipcRenderer.on("generate-prompt-token", (event, sessionId, data) => {
   if (currentSessionId == sessionId) {
     outputText += data;
+    addToCommandBuffer(data);
     reponseDisplay.innerHTML = marked.parse(outputText.toString());
-    se_loading.loop = false;
+    seLoading.loop = false;
     document.getElementById("srLoadingIndicator").classList.add("d-none");
   }
 });
