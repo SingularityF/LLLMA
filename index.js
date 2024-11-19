@@ -1,13 +1,13 @@
 // main.js
-const { app, BrowserWindow, ipcMain } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 const axios = require('axios');
 const FormData = require('form-data');
 const fs = require('fs');
 const moment = require('moment');
-const { exec } = require('child_process');
+const { execFile } = require('child_process');
 let currentSessionWindow;
 
-var systemPrompt = (supportedApps, dateNow, timeNow) => `
+const systemPrompt = (supportedApps, dateNow, timeNow) => `
 This message is system information, it is neither assistant output nor user input.
 
 An application can be launched with assistant (not user) output, [STARTAPP APPNAME] (with square brackets), for example [STARTAPP Calculator].
@@ -33,7 +33,7 @@ function addContext(registeredApps) {
 // Function to execute commands like WIN+R
 ipcMain.handle('launch-app', async (event, command) => {
   return new Promise((resolve, reject) => {
-    exec(command, (error, stdout, stderr) => {
+    execFile(command, (error, stdout, stderr) => {
       if (error) {
         reject(`Error: ${error.message}`);
         return;
@@ -269,6 +269,19 @@ function createUIWindow() {
 
   ipcMain.on('set-always-on-top', (event, isAlwaysOnTop) => {
     win.setAlwaysOnTop(isAlwaysOnTop);
+  });
+
+  ipcMain.on('open-file-dialog', (event, id) => {
+    dialog.showOpenDialog({
+      properties: ['openFile'],
+      modal: true
+    }).then(result => {
+      if (!result.canceled) {
+        event.sender.send('selected-file', id, result.filePaths[0]);
+      }
+    }).catch(err => {
+      console.log(err);
+    });
   });
 }
 

@@ -23,13 +23,21 @@ seLoading.loop = true;
 seLoading.volume = .15;
 seLoading.preload = 'auto';
 
+function openFileDialog(id) {
+  ipcRenderer.send('open-file-dialog', id);
+}
+
+ipcRenderer.on('selected-file', (event, id, path) => {
+  document.getElementById(id).value = path;
+});
+
 function addToCommandBuffer(text) {
   commandBuffer += text;
   commandBuffer = commandBuffer.slice(-10000);
-  
+
   const regexApp = /\[STARTAPP (.*?)\]/;
   const regexLink = /\[OPENURL (.*?)\]/;
-  
+
   let match = commandBuffer.match(regexApp);
   if (match) {
     registeredApps = getRegisteredAppsData();
@@ -115,26 +123,65 @@ document.addEventListener('click', function (event) {
   }
 });
 
+const registeredAppsTemplate = (appName, command, lineNum) => `<td><input type="checkbox" class="form-check-input row-checkbox"></td>
+<td><input type="text" class="form-control form-control-sm" value="${appName}" placeholder="app..."></td>
+<td><input id="registeredApps-${lineNum}" type="text" class="form-control form-control-sm" value="${command}" placeholder="command..."></td>
+<td><button class="btn btn-outline-secondary py-1 px-2" onclick="openFileDialog('registeredApps-${lineNum}')"><i class="bi bi-folder"></i></button></td>
+`;
+
 function getRegisteredAppsData() {
-  const data = [];
-  const rows = document.querySelectorAll("#registeredAppsDisplay tr");
-  rows.forEach(row => {
-    const appName = row.cells[1].querySelector("input").value;
-    const command = row.cells[2].querySelector("input").value;
-    data.push({ appName, command });
-  });
+  const jsonData = localStorage.getItem('registeredApps');
+  let data;
+  if (jsonData) {
+    data = JSON.parse(jsonData);
+  } else {
+    data = [
+      { appName: "Calculator", command: "calc" },
+      { appName: "Notepad", command: "notepad" }
+    ];
+    localStorage.setItem('registeredApps', JSON.stringify(data));
+  }
   return data;
+}
+
+function populateRegisteredAppsDisplay(){
+  const registeredApps = getRegisteredAppsData();
+  registeredApps.forEach((element, i) => {
+    const table = document.getElementById("registeredAppsDisplay");
+    const newRow = document.createElement("tr");
+    newRow.innerHTML = registeredAppsTemplate(element.appName, element.command, i);
+    table.appendChild(newRow);
+  });
+  
+}
+
+function saveRegisteredApps() {
+  const table = document.getElementById('registeredAppsTable');
+  const headers = Array.from(table.querySelectorAll('thead th'));
+  const rows = table.querySelectorAll('tbody tr');
+
+  // Determine the indices of the columns
+  const appNameIndex = headers.findIndex(th => th.textContent.trim() === 'App Name');
+  const commandIndex = headers.findIndex(th => th.textContent.trim() === 'Command');
+
+  // Extract data from these specific columns
+  const registeredApps = Array.from(rows).map(row => {
+    const cells = row.querySelectorAll('td');
+    return {
+      appName: cells[appNameIndex].querySelector('input').value,
+      command: cells[commandIndex].querySelector('input').value
+    };
+  });
+  const serializedData = JSON.stringify(registeredApps);
+  localStorage.setItem('registeredApps', serializedData);
 }
 
 // Function to add a new row
 function registerNewApp() {
   const table = document.getElementById("registeredAppsDisplay");
   const newRow = document.createElement("tr");
-  newRow.innerHTML = `
-      <td><input type="checkbox" class="form-check-input row-checkbox"></td>
-      <td><input type="text" class="form-control form-control-sm" placeholder="app..."></td>
-      <td><input type="text" class="form-control form-control-sm" placeholder="command..."></td>
-      `;
+  const id = crypto.randomUUID();
+  newRow.innerHTML = registeredAppsTemplate("", "", id);
   table.appendChild(newRow);
 }
 
@@ -179,6 +226,7 @@ function populateVoiceList() {
 if (typeof window.speechSynthesis !== 'undefined') {
   window.speechSynthesis.onvoiceschanged = populateVoiceList;
 }
+
 
 document.getElementById("ttsVoiceSelector").addEventListener('change', function () {
   const ttsSelection = this.value;
@@ -338,5 +386,10 @@ ipcRenderer.on("generate-prompt-error", (event, data) => {
   console.log(data);
 });
 
-const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
-const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+function initialize(){
+  populateRegisteredAppsDisplay();
+  const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+  const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+}
+
+initialize();
