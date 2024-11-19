@@ -17,7 +17,7 @@ let gumStream;
 let outputText = "";
 let openMicFlag = false;
 let currentSessionId;
-let seLoading = new Audio('SE/seLoading.mp3');
+let seLoading = new Audio('SE/se_loading.mp3');
 let commandBuffer = ""
 seLoading.loop = true;
 seLoading.volume = .15;

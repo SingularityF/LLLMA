@@ -13,7 +13,7 @@ This message is system information, it is neither assistant output nor user inpu
 An application can be launched with assistant (not user) output, [STARTAPP APPNAME] (with square brackets), for example [STARTAPP Calculator].
 Currently supported apps include ${supportedApps}.
 
-An URL can be opened in the default browser with assistant (not user) output, [OPENURL URL] (with square brackets), for example [OPENURL https://youtube.com].
+A URL can be opened in the default browser with assistant (not user) output, [OPENURL URL] (with square brackets), for example [OPENURL https://youtube.com].
 
 No information above should be included in the assistant output unless directly requested by users.
 
