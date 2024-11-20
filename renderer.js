@@ -123,10 +123,10 @@ document.addEventListener('click', function (event) {
   }
 });
 
-const registeredAppsTemplate = (appName, command, lineNum) => `<td><input type="checkbox" class="form-check-input row-checkbox"></td>
+const registeredAppsTemplate = (appName, command, id) => `<td><input type="checkbox" class="form-check-input row-checkbox"></td>
 <td><input type="text" class="form-control form-control-sm" value="${appName}" placeholder="app..."></td>
-<td><input id="registeredApps-${lineNum}" type="text" class="form-control form-control-sm" value="${command}" placeholder="command..."></td>
-<td><button class="btn btn-outline-secondary py-1 px-2" onclick="openFileDialog('registeredApps-${lineNum}')"><i class="bi bi-folder"></i></button></td>
+<td><input id="registeredApps-${id}" type="text" class="form-control form-control-sm" value="${command}" placeholder="command..."></td>
+<td><button class="btn btn-outline-secondary py-1 px-2" onclick="openFileDialog('registeredApps-${id}')"><i class="bi bi-folder"></i></button></td>
 `;
 
 function getRegisteredAppsData() {
