@@ -1,7 +1,7 @@
 # Lo-MA
 Local LLM Assistant (Lo-MA) is like Microsoft Copilot (in 2024) but runs offline and can be personalized to interact with your system.
 
-The best way to interact with the assistant is to have a conversation through voice input. The experience is almost hands-free. It can currently iteract with your system in ways below.
+The best way to interact with the assistant is through voice chat, the experience is almost hands-free. It can currently iteract with your system in ways below.
 - Open URLs in your default browser based on user description
 - Register and launch any application in your system
 
