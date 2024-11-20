@@ -35,8 +35,8 @@ function addToCommandBuffer(text) {
   commandBuffer += text;
   commandBuffer = commandBuffer.slice(-10000);
 
-  const regexApp = /\[STARTAPP (.*?)\]/;
-  const regexLink = /\[OPENURL (.*?)\]/;
+  const regexApp = /\[ STARTAPP (.*?) \]/;
+  const regexLink = /\[ OPENURL (.*?) \]/;
 
   let match = commandBuffer.match(regexApp);
   if (match) {
